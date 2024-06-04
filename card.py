@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class CardSuit(Enum):
-    spade = 1
-    heart = 2
+    spades = 1
+    hearts = 2
     diamonds = 3
-    club = 4
+    clubs = 4
 
 
 class CardRank(Enum):
@@ -54,4 +54,9 @@ class Card:
 
     def __repr__(self):
         return f'{self._rank.name} of {self._suit.name} ({self._value} points)'
+
+    def get_image_path(self):
+        not_numeral_cards = {CardRank.Jack, CardRank.Queen, CardRank.King, CardRank.Ace}
+        card_name = self._rank.name.lower() if self._rank in not_numeral_cards else self._rank.value
+        return f'images/cards/{card_name}_of_{self._suit.name}.png'
 

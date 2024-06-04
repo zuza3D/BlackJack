@@ -10,5 +10,5 @@ class DeckOfCard:
     def __repr__(self):
         return ', '.join([card.__repr__() for card in self._deck])
 
-
-cards = DeckOfCard()
+    def get_deck(self):
+        return self._deck
