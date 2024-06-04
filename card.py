@@ -37,8 +37,7 @@ card_values = {
     CardRank.Jack: 10,
     CardRank.Queen: 10,
     CardRank.King: 10,
-    CardRank.Ace: 11
-
+    CardRank.Ace: 1,
 }
 
 
@@ -59,4 +58,13 @@ class Card:
         not_numeral_cards = {CardRank.Jack, CardRank.Queen, CardRank.King, CardRank.Ace}
         card_name = self._rank.name.lower() if self._rank in not_numeral_cards else self._rank.value
         return f'images/cards/{card_name}_of_{self._suit.name}.png'
+
+    def get_value(self):
+        return self._value
+
+    def get_rank(self):
+        return self._rank
+
+    def get_suit(self):
+        return self._suit
 
