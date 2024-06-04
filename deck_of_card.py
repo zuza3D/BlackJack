@@ -19,5 +19,5 @@ class DeckOfCard:
         random.shuffle(self._deck)
 
     def deal_card(self):
-        self._deck.pop()
+        return self._deck.pop()
 

@@ -4,36 +4,45 @@ from card import Card, CardRank
 
 class Player:
     hand: list[Card]
-    aces: int
+    extra_point_ace: bool
     higher_score: int
     lower_score: int
 
     def __init__(self):
         self.hand = list()
-        self.aces = 0
+        self.extra_point_ace = False
         self.higher_score = 0
         self.lower_score = 0
 
     def take_card(self, card):
         self.hand.append(card)
-        if card == CardRank.Ace:
-            self.aces += 1
 
-        self.higher_score += (card.get_value() + 10 if card == CardRank.Ace and self.aces == 1
-                              else card.get_value())
+        card_value = card.get_value()
+        card_rank = card.get_rank()
 
-        self.lower_score += 1 if card == CardRank.Ace else card.get_value()
+        self.lower_score += card_value
+        self.higher_score += card_value
+        self.higher_score += (10 if card_rank == CardRank.Ace and
+                                    not self.extra_point_ace else 0)
+        if card_rank == CardRank.Ace and not self.extra_point_ace:
+            self.extra_point_ace = True
 
     def reset(self):
         self.hand.clear()
-        self.aces = 0
+        self.extra_point_ace = False
         self.higher_score = 0
         self.lower_score = 0
+
+    def __str__(self):
+        return f'Player: {self.higher_score} | {self.lower_score}'
 
 
 class Dealer(Player):
     def __init__(self):
         super().__init__()
+
+    def __str__(self):
+        return f'Dealer: {self.higher_score} | {self.lower_score}'
 
 
 class BlackJackGame:
@@ -52,8 +61,6 @@ class BlackJackGame:
         self.player.reset()
         self.deck_of_card.shuffle()
         self.deal_initial_cards()
-
-        self.player.take_card(self.deck_of_card.deal_card())
 
     def deal_initial_cards(self):
         for i in range(2):
