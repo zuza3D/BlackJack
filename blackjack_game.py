@@ -68,3 +68,19 @@ class BlackJackGame:
             self.dealer.take_card(self.deck_of_card.deal_card())
         while self.dealer.lower_score < 17:
             self.dealer.take_card(self.deck_of_card.deal_card())
+
+    def find_winner(self):
+        player_best_result = (self.player.lower_score if self.player.higher_score > 21
+                              else self.player.higher_score)
+        dealer_best_result = (self.dealer.lower_score if self.dealer.higher_score > 21
+                              else self.dealer.higher_score)
+
+        if player_best_result > 21:
+            return f'Dealer wins'
+        if dealer_best_result > 21:
+            return f'Player wins'
+        if player_best_result > dealer_best_result:
+            return f'Player wins'
+        if dealer_best_result > player_best_result:
+            return f'Dealer wins'
+        return "It's a tie!"
