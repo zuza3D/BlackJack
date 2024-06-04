@@ -20,4 +20,3 @@ class DeckOfCard:
 
     def deal_card(self):
         return self._deck.pop()
-

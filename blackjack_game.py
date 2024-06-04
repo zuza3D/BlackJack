@@ -5,14 +5,12 @@ from card import Card, CardRank
 class Player:
     hand: list[Card]
     extra_point_ace: bool
-    higher_score: int
-    lower_score: int
+    score: int
 
     def __init__(self):
         self.hand = list()
         self.extra_point_ace = False
-        self.higher_score = 0
-        self.lower_score = 0
+        self.score = 0
 
     def take_card(self, card):
         self.hand.append(card)
@@ -20,21 +18,24 @@ class Player:
         card_value = card.get_value()
         card_rank = card.get_rank()
 
-        self.lower_score += card_value
-        self.higher_score += card_value
-        self.higher_score += (10 if card_rank == CardRank.Ace and
-                                    not self.extra_point_ace else 0)
+        self.score += card_value
         if card_rank == CardRank.Ace and not self.extra_point_ace:
             self.extra_point_ace = True
 
     def reset(self):
         self.hand.clear()
         self.extra_point_ace = False
-        self.higher_score = 0
-        self.lower_score = 0
+        self.score = 0
 
     def __str__(self):
-        return f'Player: {self.higher_score} | {self.lower_score}'
+        return (f'Player: {self.score} | {self.score+10}' if self.extra_point_ace
+                else f'Player: {self.score}')
+
+    def is_lost(self):
+        return True if self.score > 21 else False
+
+    def has_blackjack(self):
+        return True if self.score == 21 or self.score + self.extra_point_ace * 10 == 21 else False
 
 
 class Dealer(Player):
@@ -42,7 +43,8 @@ class Dealer(Player):
         super().__init__()
 
     def __str__(self):
-        return f'Dealer: {self.higher_score} | {self.lower_score}'
+        return (f'Dealer: {self.score} | {self.score + 10}' if self.extra_point_ace
+                else f'Dealer: {self.score}')
 
 
 class BlackJackGame:
@@ -59,6 +61,7 @@ class BlackJackGame:
     def start_game(self):
         self.dealer.reset()
         self.player.reset()
+        self.deck_of_card = DeckOfCard()
         self.deck_of_card.shuffle()
         self.deal_initial_cards()
 
@@ -71,23 +74,30 @@ class BlackJackGame:
         self.player.take_card(self.deck_of_card.deal_card())
 
     def dealer_play(self):
-        while self.dealer.higher_score < 17 and self.dealer.lower_score < 17:
+        dealer_score = self.dealer.score
+        while dealer_score + self.dealer.extra_point_ace * 10 < 17 and dealer_score < 17:
             self.dealer.take_card(self.deck_of_card.deal_card())
-        while self.dealer.lower_score < 17:
-            self.dealer.take_card(self.deck_of_card.deal_card())
+            dealer_score = self.dealer.score
 
     def find_winner(self):
-        player_best_result = (self.player.lower_score if self.player.higher_score > 21
-                              else self.player.higher_score)
-        dealer_best_result = (self.dealer.lower_score if self.dealer.higher_score > 21
-                              else self.dealer.higher_score)
+        player_ace = self.player.extra_point_ace
+        dealer_ace = self.dealer.extra_point_ace
+        player_score = self.player.score + player_ace * 10
+        dealer_score = self.dealer.score + dealer_ace * 10
 
-        if player_best_result > 21:
+        player_score = player_score if player_score <= 21 else player_score - player_ace * 10
+        dealer_score = dealer_score if dealer_score <= 21 else dealer_score - dealer_ace * 10
+
+        if player_score > 21:
             return f'Dealer wins'
-        if dealer_best_result > 21:
+        if dealer_score > 21:
             return f'Player wins'
-        if player_best_result > dealer_best_result:
+        if player_score > dealer_score:
             return f'Player wins'
-        if dealer_best_result > player_best_result:
+        if dealer_score > player_score:
             return f'Dealer wins'
         return "It's a tie!"
+
+    def is_game_over(self):
+        if self.player.is_lost() or self.player.has_blackjack():
+            self.find_winner()

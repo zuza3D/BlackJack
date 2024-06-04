@@ -4,6 +4,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import ScreenManager, Screen
 from blackjack_game import BlackJackGame
 
@@ -13,7 +14,14 @@ class CustomButton(Button):
         super(CustomButton, self).__init__(**kwargs)
         self.font_name = "Comic"
         self.bold = True
-        self.font_size = 30
+        self.font_size = 25
+
+
+class CustomLabel(Label):
+    def __init__(self, **kwargs):
+        super(CustomLabel, self).__init__(**kwargs)
+        self.font_name = "Comic"
+        self.font_size = 25
 
 
 class GameLayout(GridLayout):
@@ -25,9 +33,12 @@ class GameLayout(GridLayout):
         self.navigation_layout = GridLayout()
         self.navigation_layout.cols = 6
 
-        self.back_button = CustomButton(text="<-")
+        self.back_button = CustomButton(text="back")
         self.back_button.bind(on_press=self.back_to_menu)
+        self.new_game_button = CustomButton(text="restart")
+        self.new_game_button.bind(on_press=self.start_new_game)
         self.navigation_layout.add_widget(self.back_button)
+        self.navigation_layout.add_widget(self.new_game_button)
         self.navigation_layout.add_widget(Label())
         self.navigation_layout.add_widget(Label())
         self.navigation_layout.add_widget(Label())
@@ -53,7 +64,7 @@ class GameLayout(GridLayout):
         self.player_layout.cols = 5
         self.update_player_layout()
 
-        self.player_decision_layout = GridLayout()
+        self.player_decision_layout = GridLayout(padding=20)
         self.player_decision_layout.cols = 7
         self.player_decision_layout.add_widget(Label())
         self.player_decision_layout.add_widget(Label())
@@ -62,6 +73,7 @@ class GameLayout(GridLayout):
         self.hit_button.bind(on_press=self.hit)
         self.double_button = CustomButton(text='double')
         self.stand_button = CustomButton(text='stand')
+        self.stand_button.bind(on_press=self.stand)
         self.player_decision_layout.add_widget(self.hit_button)
         self.player_decision_layout.add_widget(self.double_button)
         self.player_decision_layout.add_widget(self.stand_button)
@@ -76,6 +88,23 @@ class GameLayout(GridLayout):
         self.game.player_hit()
         self.update_player_layout()
         self.update_player_score_layout()
+        if self.game.player.has_blackjack() or self.game.player.is_lost():
+            self.end_game()
+
+    def stand(self, item):
+        if self.game.dealer.has_blackjack():
+            self.end_game()
+        self.game.dealer_play()
+        self.update_dealer_layout()
+        self.update_dealer_score_layout()
+        self.end_game()
+
+    def update_dealer_layout(self):
+        self.dealer_layout.clear_widgets()
+        for card in self.game.dealer.hand:
+            self.dealer_layout.add_widget(Image(source=card.get_image_path()))
+        if self.dealer_layout not in self.children:
+            self.add_widget(self.dealer_layout)
 
     def update_player_layout(self):
         self.player_layout.clear_widgets()
@@ -86,15 +115,29 @@ class GameLayout(GridLayout):
 
     def update_player_score_layout(self):
         self.player_score_layout.clear_widgets()
-        self.player_score_layout.add_widget(Label(text=self.game.player.__str__()))
+        self.player_score_layout.add_widget(CustomLabel(text=self.game.player.__str__()))
         if self.player_score_layout not in self.children:
             self.add_widget(self.player_score_layout)
 
     def update_dealer_score_layout(self):
         self.dealer_score_layout.clear_widgets()
-        self.dealer_score_layout.add_widget(Label(text=self.game.dealer.__str__()))
+        self.dealer_score_layout.add_widget(CustomLabel(text=self.game.dealer.__str__()))
         if self.dealer_score_layout not in self.children:
             self.add_widget(self.dealer_score_layout)
+
+    def end_game(self):
+        winner = self.game.find_winner()
+        self.show_popup(winner)
+
+    def show_popup(self, message):
+        popup = Popup(title='Game Over',
+                      content=Label(text=message),
+                      size_hint=(None, None), size=(400, 200))
+        popup.open()
+
+    def start_new_game(self, item):
+        self.game.start_game()
+
 
 class MainMenuLayout(GridLayout):
     def __init__(self, **kwargs):
