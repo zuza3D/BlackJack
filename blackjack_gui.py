@@ -1,9 +1,8 @@
 from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.popup import Popup
 from blackjack_game import BlackJackGame
-from widgets import CustomLabel, CustomButton
+from widgets import CustomLabel, CustomButton, MenuLabel, CustomPopup
 from kivy.clock import Clock
 
 
@@ -14,7 +13,7 @@ class GameLayout(GridLayout):
 
         super(GameLayout, self).__init__(**kwargs)
         self.cols = 1
-        self.navigation_layout = GridLayout()
+        self.navigation_layout = GridLayout(size_hint_y=0.4)
         self.navigation_layout.cols = 6
 
         self.back_button = CustomButton(text="back")
@@ -36,9 +35,7 @@ class GameLayout(GridLayout):
 
         self.dealer_layout = GridLayout()
         self.dealer_layout.cols = 5
-        for card in self.game.dealer.hand:
-            self.dealer_layout.add_widget(Image(source=card.get_image_path()))
-        self.add_widget(self.dealer_layout)
+        self.update_dealer_layout()
 
         self.player_score_layout = GridLayout()
         self.player_score_layout.cols = 5
@@ -48,7 +45,7 @@ class GameLayout(GridLayout):
         self.player_layout.cols = 5
         self.update_player_layout()
 
-        self.player_decision_layout = GridLayout(padding=20)
+        self.player_decision_layout = GridLayout(size_hint_y=0.4)
         self.player_decision_layout.cols = 7
         self.player_decision_layout.add_widget(Label())
         self.player_decision_layout.add_widget(Label())
@@ -66,13 +63,14 @@ class GameLayout(GridLayout):
         self.add_widget(self.player_decision_layout)
 
     def back_to_menu(self, _):
+        self.load_new_game()
         self.screen_manager.current = 'menu'
 
     def hit(self, _):
         self.game.player_hit()
         self.update_player_layout()
         self.update_player_score_layout()
-        if self.game.player.has_blackjack() or self.game.player.is_lost():
+        if self.game.is_game_over():
             self.end_game()
 
     def stand(self, _):
@@ -83,10 +81,15 @@ class GameLayout(GridLayout):
         self.update_dealer_score_layout()
         self.end_game()
 
-    def update_dealer_layout(self):
+    def update_dealer_layout(self, hide_cards=True):
         self.dealer_layout.clear_widgets()
-        for card in self.game.dealer.hand:
-            self.dealer_layout.add_widget(Image(source=card.get_image_path()))
+        dealer_cards = self.game.dealer.hand
+        if self.game.dealer.hidden_card:
+            self.dealer_layout.add_widget(Image(source=dealer_cards[0].get_image_path()))
+            self.dealer_layout.add_widget(Image(source='images/cards/blank.png'))
+        else:
+            for card in self.game.dealer.hand:
+                self.dealer_layout.add_widget(Image(source=card.get_image_path()))
         if self.dealer_layout not in self.children:
             self.add_widget(self.dealer_layout)
 
@@ -116,16 +119,29 @@ class GameLayout(GridLayout):
     @staticmethod
     def show_popup(message):
         def open_popup(_):
-            popup = Popup(title='Game Over',
-                          content=Label(text=message),
-                          size_hint=(None, None), size=(400, 200))
+            popup = CustomPopup(content=CustomLabel(text=message))
             popup.open()
 
-        # Schedule the popup to open after 3 seconds
-        Clock.schedule_once(open_popup, 3)
+        # Schedule the popup to open after 2 seconds
+        Clock.schedule_once(open_popup, 2)
+
+    def load_new_game(self):
+        self.game.start_game()
+        self.update_player_layout()
+        self.update_dealer_layout()
+        self.update_player_score_layout()
+        self.update_dealer_score_layout()
+        if self.game.is_game_over():
+            self.end_game()
 
     def start_new_game(self, _):
         self.game.start_game()
+        self.update_player_layout()
+        self.update_dealer_layout()
+        self.update_player_score_layout()
+        self.update_dealer_score_layout()
+        if self.game.is_game_over():
+            self.end_game()
 
 
 class MainMenuLayout(GridLayout):
@@ -133,39 +149,43 @@ class MainMenuLayout(GridLayout):
         self.screen_manager = screen_manager
         super(MainMenuLayout, self).__init__(**kwargs)
         self.cols = 1
-        self.padding = 50
-        self.spacing = 10
+        self.padding = 20
+        self.spacing = 20
 
-        self.top_grid = GridLayout()
-        self.top_grid.cols = 3
+        self.top_grid = GridLayout(size_hint_y=0.4)
+        self.top_grid.cols = 1
 
         # Add Image
-        self.top_grid.add_widget(Image(source="images/logo_l.png"))
+        self.top_grid.add_widget(Image(source="images/logoo.png"))
 
         # Add Label
-        self.label = Label(text="BlackJack", color=(0, 0, 0, 1), font_size=50, bold=True, font_name="Comic")
-        self.top_grid.add_widget(self.label)
+        # self.label = MenuLabel()
+        # self.top_grid.add_widget(self.label)
 
         # Add Image
-        self.top_grid.add_widget(Image(source="images/logo_r.png"))
+        # self.top_grid.add_widget(Image(source="images/logo_r.png"))
 
         self.add_widget(self.top_grid)
 
+        self.buttons_layout = GridLayout()
+        self.buttons_layout.cols = 1
         # Add "Play" button and bind to start_game
         self.play_button = CustomButton(text="Play")
         self.play_button.bind(on_press=self.start_game)
-        self.add_widget(self.play_button)
+        self.buttons_layout.add_widget(self.play_button)
 
         # Add "Practise" button and bind to ...
         self.practise_button = CustomButton(text="Practise basic strategy")
-        self.add_widget(self.practise_button)
+        self.buttons_layout.add_widget(self.practise_button)
 
         # Add "Statistic" button and bind to ...
         self.statistics_button = CustomButton(text="Player statistics")
-        self.add_widget(self.statistics_button)
+        self.buttons_layout.add_widget(self.statistics_button)
 
         self.exit_button = CustomButton(text="Exit")
-        self.add_widget(self.exit_button)
+        self.buttons_layout.add_widget(self.exit_button)
+
+        self.add_widget(self.buttons_layout)
 
     def start_game(self, _):
         self.screen_manager.current = 'game'
