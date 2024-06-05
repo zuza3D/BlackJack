@@ -1,32 +1,16 @@
-from kivy.app import App
 from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.button import Button
-from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import ScreenManager, Screen
 from blackjack_game import BlackJackGame
-
-
-class CustomButton(Button):
-    def __init__(self, **kwargs):
-        super(CustomButton, self).__init__(**kwargs)
-        self.font_name = "Comic"
-        self.bold = True
-        self.font_size = 25
-
-
-class CustomLabel(Label):
-    def __init__(self, **kwargs):
-        super(CustomLabel, self).__init__(**kwargs)
-        self.font_name = "Comic"
-        self.font_size = 25
+from widgets import CustomLabel, CustomButton
+from kivy.clock import Clock
 
 
 class GameLayout(GridLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, screen_manager, **kwargs):
         self.game = BlackJackGame()
+        self.screen_manager = screen_manager
 
         super(GameLayout, self).__init__(**kwargs)
         self.cols = 1
@@ -81,17 +65,17 @@ class GameLayout(GridLayout):
         self.player_decision_layout.add_widget(Label())
         self.add_widget(self.player_decision_layout)
 
-    def back_to_menu(self, item):
-        black_jack_gui.screen_manager.current = 'menu'
+    def back_to_menu(self, _):
+        self.screen_manager.current = 'menu'
 
-    def hit(self, item):
+    def hit(self, _):
         self.game.player_hit()
         self.update_player_layout()
         self.update_player_score_layout()
         if self.game.player.has_blackjack() or self.game.player.is_lost():
             self.end_game()
 
-    def stand(self, item):
+    def stand(self, _):
         if self.game.dealer.has_blackjack():
             self.end_game()
         self.game.dealer_play()
@@ -129,18 +113,24 @@ class GameLayout(GridLayout):
         winner = self.game.find_winner()
         self.show_popup(winner)
 
-    def show_popup(self, message):
-        popup = Popup(title='Game Over',
-                      content=Label(text=message),
-                      size_hint=(None, None), size=(400, 200))
-        popup.open()
+    @staticmethod
+    def show_popup(message):
+        def open_popup(_):
+            popup = Popup(title='Game Over',
+                          content=Label(text=message),
+                          size_hint=(None, None), size=(400, 200))
+            popup.open()
 
-    def start_new_game(self, item):
+        # Schedule the popup to open after 3 seconds
+        Clock.schedule_once(open_popup, 3)
+
+    def start_new_game(self, _):
         self.game.start_game()
 
 
 class MainMenuLayout(GridLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, screen_manager, **kwargs):
+        self.screen_manager = screen_manager
         super(MainMenuLayout, self).__init__(**kwargs)
         self.cols = 1
         self.padding = 50
@@ -161,44 +151,21 @@ class MainMenuLayout(GridLayout):
 
         self.add_widget(self.top_grid)
 
-        # Add Buttons
+        # Add "Play" button and bind to start_game
         self.play_button = CustomButton(text="Play")
         self.play_button.bind(on_press=self.start_game)
         self.add_widget(self.play_button)
 
-        self.train_button = CustomButton(text="Practise basic strategy")
-        self.add_widget(self.train_button)
+        # Add "Practise" button and bind to ...
+        self.practise_button = CustomButton(text="Practise basic strategy")
+        self.add_widget(self.practise_button)
 
+        # Add "Statistic" button and bind to ...
         self.statistics_button = CustomButton(text="Player statistics")
         self.add_widget(self.statistics_button)
 
         self.exit_button = CustomButton(text="Exit")
         self.add_widget(self.exit_button)
 
-    def start_game(self, item):
-        black_jack_gui.screen_manager.current = 'game'
-
-
-class BlackJackGUI(App):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.screen_manager = ScreenManager()
-        self.menu_page = MainMenuLayout()
-        self.game_page = GameLayout()
-
-    def build(self):
-        Window.clearcolor = (40 / 255, 40 / 255, 40 / 255, 40 / 255)
-
-        screen = Screen(name="menu")
-        screen.add_widget(self.menu_page)
-        self.screen_manager.add_widget(screen)
-
-        screen = Screen(name="game")
-        screen.add_widget(self.game_page)
-        self.screen_manager.add_widget(screen)
-
-        return self.screen_manager
-
-
-black_jack_gui = BlackJackGUI()
-black_jack_gui.run()
+    def start_game(self, _):
+        self.screen_manager.current = 'game'
