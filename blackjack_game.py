@@ -125,7 +125,7 @@ class BlackJackGame:
         while self._dealer.score + self._dealer.extra_point_ace * 10 > 21 and self._dealer.score < 17:
             self._dealer.take_card(self._deck_of_card.deal_card())
 
-    def find_winner(self):
+    def get_players_score(self):
         player_ace = self._player.extra_point_ace
         dealer_ace = self._dealer.extra_point_ace
         player_score = self._player.score + player_ace * 10
@@ -133,6 +133,10 @@ class BlackJackGame:
 
         player_score = player_score if player_score <= 21 else player_score - player_ace * 10
         dealer_score = dealer_score if dealer_score <= 21 else dealer_score - dealer_ace * 10
+        return player_score, dealer_score
+
+    def find_winner(self):
+        player_score, dealer_score = self.get_players_score()
 
         if player_score > 21:
             return f'Dealer wins'
@@ -146,4 +150,8 @@ class BlackJackGame:
 
     def is_game_over(self):
         if self._player.is_lost() or self._player.has_blackjack():
-            self.find_winner()
+            return self.find_winner()
+
+    def show_result(self):
+        player_score, dealer_score = self.get_players_score()
+        return f"Your hand: {player_score} \nDealer's hand: {dealer_score}"

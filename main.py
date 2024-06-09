@@ -19,9 +19,6 @@ class BlackJackGUI(App):
         game_screen.add_widget(game_page)
         self.screen_manager.add_widget(game_screen)
 
-        Window.clearcolor = (240/255, 215/255, 135/255, 1)
-        # Window.clearcolor = (120/255, 78/255, 86/255, 1)
-        # Window.clearcolor = (40 / 255, 40 / 255, 40 / 255, 1)
         return self.screen_manager
 
 
