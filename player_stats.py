@@ -37,7 +37,6 @@ class PlayerStats:
             json.dump(self._player_stats, file)
 
     def update_stats(self, result, bet, blackjack=False):
-        print(result)
         if result['player']:
             if blackjack:
                 self._player_stats['balance'] += bet

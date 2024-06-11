@@ -181,7 +181,6 @@ class BlackJackGame:
 
     def update_result(self):
         player_score, dealer_score = self.get_players_score()
-        print(f'player{player_score}, dealer{dealer_score}')
         if player_score > 21:
             self._result['dealer'] = 1
         elif dealer_score > 21:
