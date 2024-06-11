@@ -3,28 +3,37 @@ from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
+
 from blackjack_game import BlackJackGame
-from widgets import CustomLabel, CustomButton, TitleLabel, CustomPopup, MenuButton, ScoreLabel, PopupLayout
+from widgets import CustomButton, TitleLabel, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomIntSlider, \
+    CreditsLabel
 
 
 class GameLayout(GridLayout):
-    def __init__(self, screen_manager, **kwargs):
-        self.game = BlackJackGame()
-        self.screen_manager = screen_manager
-
+    def __init__(self, screen_manager, player_stats, **kwargs):
         super(GameLayout, self).__init__(**kwargs)
+        self.bet_label = None
+        self.bet_button = None
+        self.slider = None
         self.cols = 1
-        self.navigation_layout = StackLayout(size_hint=(1, 0.4))
+
+        self.screen_manager = screen_manager
+        self.game = BlackJackGame()
+        self.player_stats = player_stats
 
         self.popup = None
+
+        self.navigation_bar = StackLayout(size_hint=(1, 0.4))
 
         self.back_button = CustomButton(text="menu".upper(), size_hint=(0.2, 1))
         self.back_button.bind(on_press=self.back_to_menu)
         self.new_game_button = CustomButton(text="new game".upper(), size_hint=(0.2, 1))
         self.new_game_button.bind(on_press=self.start_new_game)
-        self.navigation_layout.add_widget(self.back_button)
-        self.navigation_layout.add_widget(self.new_game_button)
-        self.add_widget(self.navigation_layout)
+        self.credits_label = CreditsLabel(self.player_stats.balance)
+        self.navigation_bar.add_widget(self.back_button)
+        self.navigation_bar.add_widget(self.new_game_button)
+        self.navigation_bar.add_widget(self.credits_label)
+        self.add_widget(self.navigation_bar)
 
         self.game.start_game()
 
@@ -45,23 +54,72 @@ class GameLayout(GridLayout):
         self.player_split_layout = StackLayout()
         self.update_player_layout()
 
-        self.player_decision_layout = GridLayout(size_hint_y=0.4)
-        self.player_decision_layout.cols = 7
-        self.player_decision_layout.add_widget(Label())
-        self.player_decision_layout.add_widget(Label())
+        self.player_decision_bar = GridLayout(size_hint_y=0.4)
+        self.player_decision_bar.cols = 7
+        self.player_decision_bar.add_widget(Label())
+        self.player_decision_bar.add_widget(Label())
 
         self.hit_button = CustomButton(text='hit'.upper())
         self.hit_button.bind(on_press=self.hit)
         self.double_button = CustomButton(text='double'.upper())
         self.stand_button = CustomButton(text='stand'.upper())
         self.stand_button.bind(on_press=self.stand)
-        self.player_decision_layout.add_widget(self.hit_button)
-        self.player_decision_layout.add_widget(self.double_button)
-        self.player_decision_layout.add_widget(self.stand_button)
-        self.player_decision_layout.add_widget(Label())
-        self.player_decision_layout.add_widget(Label())
+        self.player_decision_bar.add_widget(self.hit_button)
+        self.player_decision_bar.add_widget(self.double_button)
+        self.player_decision_bar.add_widget(self.stand_button)
+        self.player_decision_bar.add_widget(Label())
+        self.player_decision_bar.add_widget(Label())
         self.add_widget(GridLayout(size_hint_y=0.2))
-        self.add_widget(self.player_decision_layout)
+        self.add_widget(self.player_decision_bar)
+
+        self.bet_bar = BoxLayout()
+        self.bet_bar.orientation = 'vertical'
+        self.create_bet_bar()
+        self.add_widget(self.bet_bar)
+
+        # self.xd = StackLayout()
+        # self.xd.add_widget(CustomButton(background_color=(1,0,0,1), size_hint=(0.2, 1)))
+        # self.xd.add_widget(CustomButton(background_color=(0, 1, 0, 1), size_hint=(0.8, 1)))
+        # self.add_widget(self.xd)
+
+    def create_bet_bar(self):
+        self.bet_bar.clear_widgets()
+        self.disable_player_decision_buttons()
+        self.slider = CustomIntSlider(max=self.player_stats.balance)
+        self.slider.bind(value=self.on_slider_value_change)
+
+        self.bet_button = CenteredButton(text='Bet'.upper())
+        self.bet_button.bind(on_press=lambda instance: self.on_button_press(self.slider.value))
+
+        self.bet_label = CustomLabel()
+
+        self.bet_bar.add_widget(self.slider)
+        self.bet_bar.add_widget(self.bet_label)
+        self.on_slider_value_change(self.slider, self.slider.value)
+        self.bet_bar.add_widget(self.bet_button)
+
+    def on_slider_value_change(self, instance, value):
+        self.bet_label.text = str(self.slider.value) + "$"
+
+    def update_credits_label(self):
+        self.credits_label.text = "credits: ".upper() + str(self.player_stats.balance)
+
+    def on_button_press(self, value):
+        self.player_stats.balance -= value
+        self.game.player.bet = value
+        self.update_credits_label()
+        self.bet_bar.clear_widgets()
+        self.enable_player_decision_buttons()
+
+    def disable_player_decision_buttons(self):
+        for child in self.player_decision_bar.children:
+            if isinstance(child, CustomButton):
+                child.disabled = True
+
+    def enable_player_decision_buttons(self):
+        for child in self.player_decision_bar.children:
+            if isinstance(child, CustomButton):
+                child.disabled = False
 
     def back_to_menu(self, _):
         self.load_new_game()
@@ -72,11 +130,18 @@ class GameLayout(GridLayout):
         self.update_player_layout()
         self.update_player_score_layout()
         if self.game.is_game_over():
+            self.game.dealer.reveal_card()
+            self.update_dealer_layout()
+            self.update_dealer_score_layout()
             self.end_game()
 
     def stand(self, _):
         if self.game.dealer.has_blackjack():
+            self.game.dealer.reveal_card()
+            self.update_dealer_layout()
+            self.update_dealer_score_layout()
             self.end_game()
+            return
         self.game.dealer_play()
         self.update_dealer_layout()
         self.update_dealer_score_layout()
@@ -103,43 +168,48 @@ class GameLayout(GridLayout):
 
     def update_player_score_layout(self):
         self.player_score_layout.clear_widgets()
-        self.player_score_layout.add_widget(ScoreLabel(text=self.game.player.__str__().upper()))
+        self.player_score_layout.add_widget(CustomLabel(text=self.game.player.__str__().upper()))
         if self.player_score_layout not in self.children:
             self.add_widget(self.player_score_layout)
 
     def update_dealer_score_layout(self):
         self.dealer_score_layout.clear_widgets()
-        self.dealer_score_layout.add_widget(ScoreLabel(text=self.game.dealer.__str__().upper()))
+        self.dealer_score_layout.add_widget(CustomLabel(text=self.game.dealer.__str__().upper()))
         if self.dealer_score_layout not in self.children:
             self.add_widget(self.dealer_score_layout)
 
     def end_game(self):
+        self.game.update_result()
         winner = self.game.find_winner()
         result = self.game.show_result()
-        self.show_popup(winner, result)
+        self.player_stats.update_stats(self.game.result, self.game.player.bet, blackjack=False)
+        if self.player_stats.balance == 0:
+            self.show_popup("game over".upper(), self.player_stats.show_statistics())
+            self.player_stats.reset_statistics()
+        else:
+            self.show_popup(winner, result)
 
     def show_popup(self, title, content):
         self.popup = CustomPopup(title=title)
-        self.popup.content = content=PopupLayout(details=content, game_layout=self, popup=self.popup)
+        self.popup.content = PopupLayout(details=content, game_layout=self, popup=self.popup)
         self.popup.open()
 
-    def load_new_game(self):
+    def _initialize_game(self):
         self.game.start_game()
+        self.update_credits_label()
         self.update_player_layout()
         self.update_dealer_layout()
         self.update_player_score_layout()
         self.update_dealer_score_layout()
+        self.create_bet_bar()
         if self.game.is_game_over():
             self.end_game()
 
+    def load_new_game(self):
+        self._initialize_game()
+
     def start_new_game(self, _):
-        self.game.start_game()
-        self.update_player_layout()
-        self.update_dealer_layout()
-        self.update_player_score_layout()
-        self.update_dealer_score_layout()
-        if self.game.is_game_over():
-            self.end_game()
+        self._initialize_game()
 
 
 class MainMenuLayout(BoxLayout):
@@ -154,20 +224,20 @@ class MainMenuLayout(BoxLayout):
         self.add_widget(TitleLabel())
 
         # Add "Play" button and bind to start_game
-        self.play_button = MenuButton(text="Play".upper())
+        self.play_button = CenteredButton(text="Play".upper())
         self.play_button.bind(on_press=self.start_game)
         self.add_widget(self.play_button)
 
         # Add "Practise" button
-        self.practise_button = MenuButton(text="Practise basic strategy".upper())
+        self.practise_button = CenteredButton(text="Practise basic strategy".upper())
         self.add_widget(self.practise_button)
 
         # Add "Statistic" button
-        self.statistics_button = MenuButton(text="Player statistics".upper())
+        self.statistics_button = CenteredButton(text="Player statistics".upper())
         self.add_widget(self.statistics_button)
 
         # Add "Exit" button
-        self.exit_button = MenuButton(text="Exit".upper())
+        self.exit_button = CenteredButton(text="Exit".upper())
         self.add_widget(self.exit_button)
 
     def start_game(self, _):

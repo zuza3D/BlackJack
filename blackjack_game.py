@@ -1,3 +1,5 @@
+from typing import Dict
+
 from deck_of_card import DeckOfCard
 from card import Card, CardRank
 
@@ -6,12 +8,21 @@ class Player:
     _hand: list[Card]
     _extra_point_ace: bool
     _score: int
+    _bet: int
 
     def __init__(self):
         self._hand = list()
         self._extra_point_ace = False
         self._score = 0
+        self._bet = 0
 
+    @property
+    def bet(self):
+        return self._bet
+
+    @bet.setter
+    def bet(self, value):
+        self._bet = value
     @property
     def hand(self):
         return self._hand
@@ -23,6 +34,9 @@ class Player:
     @property
     def extra_point_ace(self):
         return self._extra_point_ace
+
+    def reset_bet(self):
+        self._bet = 0
 
     def take_card(self, card):
         self._hand.append(card)
@@ -84,11 +98,13 @@ class BlackJackGame:
     _deck_of_card: DeckOfCard
     _dealer: Dealer
     _player: Player
+    _result: Dict
 
     def __init__(self):
         self._deck_of_card = DeckOfCard()
         self._dealer = Dealer()
         self._player = Player()
+        self._result = {'player': 0, 'dealer': 0, 'tie': 0}
 
     @property
     def deck_of_card(self):
@@ -102,7 +118,13 @@ class BlackJackGame:
     def player(self):
         return self._player
 
+    @property
+    def result(self):
+        return self._result
+
     def start_game(self):
+        self._result = {'player': 0, 'dealer': 0, 'tie': 0}
+        self._player.reset_bet()
         self._dealer.reset()
         self._dealer.hide_card()
         self._player.reset()
@@ -148,9 +170,33 @@ class BlackJackGame:
             return f'Dealer wins'
         return "It's a tie!"
 
+    # def find_winner(self):
+    #     if self._result['player']:
+    #         return f'Player wins'
+    #     if self._result['dealer']:
+    #         return f'Dealer wins'
+    #     if self._result['tie']:
+    #         return "It's a tie!"
+    #     return "xd"
+
+    def update_result(self):
+        player_score, dealer_score = self.get_players_score()
+        print(f'player{player_score}, dealer{dealer_score}')
+        if player_score > 21:
+            self._result['dealer'] = 1
+        elif dealer_score > 21:
+            self._result['player'] = 1
+        elif player_score > dealer_score:
+            self._result['player'] = 1
+        elif dealer_score > player_score:
+            self._result['dealer'] = 1
+        else:
+            self._result['tie'] = 1
+
     def is_game_over(self):
         if self._player.is_lost() or self._player.has_blackjack():
-            return self.find_winner()
+            return True
+        return False
 
     def show_result(self):
         player_score, dealer_score = self.get_players_score()

@@ -2,6 +2,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.uix.slider import Slider
 
 
 class CustomButton(Button):
@@ -12,21 +13,14 @@ class CustomButton(Button):
         self.font_size = 25
         self.color = (240 / 255, 215 / 255, 135 / 255, 1)
         self.background_color = (110 / 255, 10 / 255, 60 / 255, 1)
+        self.disabled_color = (240 / 255, 215 / 255, 135 / 255, 1)
 
 
-class MenuButton(CustomButton):
+class CenteredButton(CustomButton):
     def __init__(self, **kwargs):
-        super(MenuButton, self).__init__(**kwargs)
+        super(CenteredButton, self).__init__(**kwargs)
         self.size_hint_x = 0.5
         self.pos_hint = {'center_x': 0.5}
-
-
-class ScoreLabel(Label):
-    def __init__(self, **kwargs):
-        super(ScoreLabel, self).__init__(**kwargs)
-        self.font_name = "Comic"
-        self.font_size = 25
-        self.color = (240 / 255, 215 / 255, 135 / 255, 1)
 
 
 class CustomLabel(Label):
@@ -67,10 +61,37 @@ class PopupLayout(BoxLayout):
         self.popup = popup
         self.orientation = "vertical"
         self.add_widget(CustomLabel(text=details))
-        self.button = MenuButton(text="ok", size_hint_y=0.3)
+        self.button = PopupButton(text="play again", size_hint_y=0.5)
         self.button.bind(on_press=self.close_popup)
         self.button.bind(on_press=self.game_layout.start_new_game)
         self.add_widget(self.button)
+        self.game_layout.disable_player_decision_buttons()
 
     def close_popup(self, _):
         self.popup.dismiss()
+
+
+class PopupButton(CenteredButton):
+    def __init__(self, **kwargs):
+        super(PopupButton, self).__init__(**kwargs)
+        self.background_color = (240 / 255, 215 / 255, 135 / 255, 1)
+        self.color = (38 / 255, 3 / 255, 21 / 255, 1)
+
+
+class CustomIntSlider(Slider):
+    def __init__(self, **kwargs):
+        super(CustomIntSlider, self).__init__(**kwargs)
+        self.min = 1
+        self.value = int(self.max / 2)
+        self.step = 1
+        self.value = int(self.value)
+        self.value_track = True
+        self.value_track_color = (110 / 255, 10 / 255, 60 / 255, 1)
+        self.handle_color = (110 / 255, 10 / 255, 60 / 255, 1)
+        self.cursor_image = "images/slider_image.png"
+
+
+class CreditsLabel(CustomLabel):
+    def __init__(self, balance, **kwargs):
+        super(CreditsLabel, self).__init__(**kwargs)
+        self.text = "credits: ".upper() + str(balance) + "$"
