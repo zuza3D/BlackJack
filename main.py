@@ -1,7 +1,7 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
-from blackjack_gui import MainMenuLayout, GameLayout
-from player_stats import PlayerStats
+from gui.blackjack_gui import MainMenuLayout, GameLayout
+from stats.player_stats import PlayerStats
 
 
 class BlackJackGUI(App):

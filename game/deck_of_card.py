@@ -1,6 +1,6 @@
 import random
 
-from card import CardRank, CardSuit, Card
+from game.card import CardRank, CardSuit, Card
 
 
 class DeckOfCard:

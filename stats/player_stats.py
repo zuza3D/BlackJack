@@ -4,7 +4,7 @@ import json
 
 class PlayerStats:
     def __init__(self):
-        self._stats_file = "player_stats.json"
+        self._stats_file = "stats/player_stats.json"
         if os.path.exists(self._stats_file):
             self._player_stats = self._load_stats()
         else:

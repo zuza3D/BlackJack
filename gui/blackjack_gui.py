@@ -4,8 +4,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 
-from blackjack_game import BlackJackGame
-from widgets import CustomButton, TitleLabel, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomIntSlider, \
+from game.blackjack_game import BlackJackGame
+from gui.widgets import CustomButton, TitleLabel, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomIntSlider, \
     CreditsLabel
 
 
@@ -49,9 +49,6 @@ class GameLayout(GridLayout):
         self.update_player_score_layout()
 
         self.player_layout = StackLayout()
-        self.update_player_layout()
-
-        self.player_split_layout = StackLayout()
         self.update_player_layout()
 
         self.player_decision_bar = GridLayout(size_hint_y=0.4)
@@ -105,6 +102,10 @@ class GameLayout(GridLayout):
         self.credits_label.text = "credits: ".upper() + str(self.player_stats.balance)
 
     def on_button_press(self, value):
+        self.update_dealer_score_layout()
+        self.update_dealer_layout()
+        self.update_player_score_layout()
+        self.update_player_layout()
         self.player_stats.balance -= value
         self.game.player.bet = value
         self.update_credits_label()

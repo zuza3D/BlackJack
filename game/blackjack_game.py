@@ -1,7 +1,7 @@
 from typing import Dict
 
-from deck_of_card import DeckOfCard
-from card import Card, CardRank
+from game.deck_of_card import DeckOfCard
+from game.card import Card, CardRank
 
 
 class Player:
