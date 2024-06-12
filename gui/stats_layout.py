@@ -7,6 +7,7 @@ from kivy.uix.widget import Widget
 from gui.plot_generator import PlotGenerator
 from gui.widgets import CustomButton, CustomLabel
 
+# popraw to!
 
 class StatsLayout(GridLayout):
     def __init__(self, screen_manager, player_stats, **kwargs):

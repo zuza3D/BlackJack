@@ -82,9 +82,9 @@ class CustomSlider(Slider):
     def __init__(self, **kwargs):
         super(CustomSlider, self).__init__(**kwargs)
         self.min = 1
+        # popraw bo coś się dziwnego stało
         self.value = int(self.max / 2) if self.max > 1 else 1
         self.step = 1
-        self.value = int(self.value)
         self.value_track = True
         self.value_track_color = (110 / 255, 10 / 255, 60 / 255, 1)
         self.handle_color = (110 / 255, 10 / 255, 60 / 255, 1)
@@ -96,3 +96,19 @@ class CreditsLabel(CustomLabel):
         super(CreditsLabel, self).__init__(**kwargs)
         self.text = "credits: ".upper() + str(balance) + "$"
         self.size_hint = (0.4, 1)
+
+
+class QuizPopup(BoxLayout):
+    def __init__(self, details, popup, quiz_layout, **kwargs):
+        super(QuizPopup, self).__init__(**kwargs)
+        self.quiz_layout = quiz_layout
+        self.popup = popup
+        self.orientation = "vertical"
+        self.add_widget(CustomLabel(text=details))
+        self.button = PopupButton(text="play again", size_hint_y=0.5)
+        self.button.bind(on_press=self.close_popup)
+        self.button.bind(on_press=self.quiz_layout.random_question)
+        self.add_widget(self.button)
+
+    def close_popup(self, _):
+        self.popup.dismiss()
