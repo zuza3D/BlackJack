@@ -5,7 +5,7 @@ from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
 
 from game.blackjack_game import BlackJackGame
-from gui.widgets import CustomButton, TitleLabel, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomIntSlider, \
+from gui.widgets import CustomButton, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomSlider, \
     CreditsLabel
 
 
@@ -39,17 +39,14 @@ class GameLayout(GridLayout):
 
         self.dealer_score_layout = GridLayout()
         self.dealer_score_layout.cols = 5
-        # self.update_dealer_score_layout()
 
         self.dealer_layout = StackLayout()
-        # self.update_dealer_layout()
 
         self.player_score_layout = GridLayout()
         self.player_score_layout.cols = 5
-        # self.update_player_score_layout()
 
         self.player_layout = StackLayout()
-        # self.update_player_layout()
+
         self.create_empty_table()
 
         self.player_decision_bar = GridLayout(size_hint_y=0.4)
@@ -89,7 +86,7 @@ class GameLayout(GridLayout):
     def create_bet_bar(self):
         self.bet_bar.clear_widgets()
         self.disable_player_decision_buttons()
-        self.slider = CustomIntSlider(max=self.player_stats.balance)
+        self.slider = CustomSlider(max=self.player_stats.balance)
         self.slider.bind(value=self.on_slider_value_change)
 
         self.bet_button = CenteredButton(text='Bet'.upper())
@@ -99,11 +96,14 @@ class GameLayout(GridLayout):
 
         self.bet_bar.add_widget(self.slider)
         self.bet_bar.add_widget(self.bet_label)
-        self.on_slider_value_change(self.slider, self.slider.value)
+        self.update_slider_label()
         self.bet_bar.add_widget(self.bet_button)
 
-    def on_slider_value_change(self, instance, value):
+    def update_slider_label(self):
         self.bet_label.text = str(self.slider.value) + "$"
+
+    def on_slider_value_change(self, *_):
+        self.update_slider_label()
 
     def update_credits_label(self):
         self.credits_label.text = "credits: ".upper() + str(self.player_stats.balance) + "$"
@@ -132,7 +132,6 @@ class GameLayout(GridLayout):
                 child.disabled = False
 
     def back_to_menu(self, _):
-        self.load_new_game()
         self.screen_manager.current = 'menu'
 
     def hit(self, _):
@@ -155,7 +154,7 @@ class GameLayout(GridLayout):
         self.dealer_layout.clear_widgets()
         dealer_cards = self.game.dealer.hand
         if before_bet:
-            for card in self.game.dealer.hand:
+            for i in range(2):
                 self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
         else:
             if self.game.dealer.hidden_card:
@@ -218,43 +217,9 @@ class GameLayout(GridLayout):
         self.update_credits_label()
         self.create_empty_table()
         self.create_bet_bar()
-        # if self.game.is_game_over():
-        #     self.end_game()
 
     def load_new_game(self):
         self._initialize_game()
 
     def start_new_game(self, _):
         self._initialize_game()
-
-
-class MainMenuLayout(BoxLayout):
-    def __init__(self, screen_manager, **kwargs):
-        self.screen_manager = screen_manager
-        super(MainMenuLayout, self).__init__(**kwargs)
-        self.padding = 20
-        self.spacing = 20
-
-        self.orientation = 'vertical'
-
-        self.add_widget(TitleLabel())
-
-        # Add "Play" button and bind to start_game
-        self.play_button = CenteredButton(text="Play".upper())
-        self.play_button.bind(on_press=self.start_game)
-        self.add_widget(self.play_button)
-
-        # Add "Practise" button
-        self.practise_button = CenteredButton(text="Practise basic strategy".upper())
-        self.add_widget(self.practise_button)
-
-        # Add "Statistic" button
-        self.statistics_button = CenteredButton(text="Player statistics".upper())
-        self.add_widget(self.statistics_button)
-
-        # Add "Exit" button
-        self.exit_button = CenteredButton(text="Exit".upper())
-        self.add_widget(self.exit_button)
-
-    def start_game(self, _):
-        self.screen_manager.current = 'game'

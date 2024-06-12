@@ -78,11 +78,11 @@ class PopupButton(CenteredButton):
         self.color = (38 / 255, 3 / 255, 21 / 255, 1)
 
 
-class CustomIntSlider(Slider):
+class CustomSlider(Slider):
     def __init__(self, **kwargs):
-        super(CustomIntSlider, self).__init__(**kwargs)
+        super(CustomSlider, self).__init__(**kwargs)
         self.min = 1
-        self.value = (self.max / 2) if self.max > 1 else 1
+        self.value = int(self.max / 2) if self.max > 1 else 1
         self.step = 1
         self.value = int(self.value)
         self.value_track = True
