@@ -95,3 +95,4 @@ class CreditsLabel(CustomLabel):
     def __init__(self, balance, **kwargs):
         super(CreditsLabel, self).__init__(**kwargs)
         self.text = "credits: ".upper() + str(balance) + "$"
+        self.size_hint = (0.4, 1)

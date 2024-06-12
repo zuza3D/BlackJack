@@ -53,6 +53,9 @@ class Player:
         self._extra_point_ace = False
         self._score = 0
 
+    def double(self):
+        self._bet *= 2
+
     def __str__(self):
         return (f'Player: {self._score} | {self._score + 10}' if self._extra_point_ace
                 else f'Player: {self._score}')

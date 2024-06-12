@@ -3,10 +3,10 @@ from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.stacklayout import StackLayout
+from kivy.uix.widget import Widget
 
 from game.blackjack_game import BlackJackGame
-from gui.widgets import CustomButton, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomSlider, \
-    CreditsLabel
+from gui.widgets import CustomButton, CustomPopup, CenteredButton, PopupLayout, CustomLabel, CustomSlider, CreditsLabel
 
 
 class GameLayout(GridLayout):
@@ -32,6 +32,7 @@ class GameLayout(GridLayout):
         self.credits_label = CreditsLabel(self.player_stats.balance)
         self.navigation_bar.add_widget(self.back_button)
         self.navigation_bar.add_widget(self.new_game_button)
+        self.navigation_bar.add_widget(Widget(size_hint=(0.2, 1)))
         self.navigation_bar.add_widget(self.credits_label)
         self.add_widget(self.navigation_bar)
 
@@ -57,6 +58,7 @@ class GameLayout(GridLayout):
         self.hit_button = CustomButton(text='hit'.upper())
         self.hit_button.bind(on_press=self.hit)
         self.double_button = CustomButton(text='double'.upper())
+        self.double_button.bind(on_press=self.double)
         self.stand_button = CustomButton(text='stand'.upper())
         self.stand_button.bind(on_press=self.stand)
         self.player_decision_bar.add_widget(self.hit_button)
@@ -72,11 +74,6 @@ class GameLayout(GridLayout):
         self.create_bet_bar()
         self.add_widget(self.bet_bar)
 
-        # self.xd = StackLayout()
-        # self.xd.add_widget(CustomButton(background_color=(1,0,0,1), size_hint=(0.2, 1)))
-        # self.xd.add_widget(CustomButton(background_color=(0, 1, 0, 1), size_hint=(0.8, 1)))
-        # self.add_widget(self.xd)
-
     def create_empty_table(self):
         self.update_dealer_score_layout(before_bet=True)
         self.update_dealer_layout(before_bet=True)
@@ -90,7 +87,7 @@ class GameLayout(GridLayout):
         self.slider.bind(value=self.on_slider_value_change)
 
         self.bet_button = CenteredButton(text='Bet'.upper())
-        self.bet_button.bind(on_press=lambda instance: self.on_button_press(self.slider.value))
+        self.bet_button.bind(on_press=lambda instance: self.on_bet_button_press(self.slider.value))
 
         self.bet_label = CustomLabel()
 
@@ -108,7 +105,7 @@ class GameLayout(GridLayout):
     def update_credits_label(self):
         self.credits_label.text = "credits: ".upper() + str(self.player_stats.balance) + "$"
 
-    def on_button_press(self, value):
+    def on_bet_button_press(self, value):
         self.update_dealer_score_layout()
         self.update_dealer_layout()
         self.update_player_score_layout()
@@ -118,6 +115,8 @@ class GameLayout(GridLayout):
         self.update_credits_label()
         self.bet_bar.clear_widgets()
         self.enable_player_decision_buttons()
+        if self.game.player.bet > self.player_stats.balance:
+            self.double_button.disabled = True
         if self.game.is_game_over():
             self.end_game()
 
@@ -135,13 +134,27 @@ class GameLayout(GridLayout):
         self.screen_manager.current = 'menu'
 
     def hit(self, _):
+        self.double_button.disabled = True
         self.game.player_hit()
         self.update_player_layout()
         self.update_player_score_layout()
         if self.game.is_game_over():
             self.end_game()
 
+    def double(self, _):
+        self.player_stats.balance -= self.slider.value
+        self.game.player.double()
+        self.update_credits_label()
+        self.game.player_hit()
+        self.update_player_layout()
+        self.update_player_score_layout()
+        self.game.dealer_play()
+        self.update_dealer_layout()
+        self.update_dealer_score_layout()
+        self.end_game()
+
     def stand(self, _):
+        self.double_button.disabled = True
         if self.game.dealer.has_blackjack():
             self.end_game()
             return
@@ -155,14 +168,14 @@ class GameLayout(GridLayout):
         dealer_cards = self.game.dealer.hand
         if before_bet:
             for i in range(2):
-                self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
+                self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.15, 1)))
         else:
             if self.game.dealer.hidden_card:
-                self.dealer_layout.add_widget(Image(source=dealer_cards[0].get_image_path(), size_hint=(0.2, 1)))
-                self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
+                self.dealer_layout.add_widget(Image(source=dealer_cards[0].get_image_path(), size_hint=(0.15, 1)))
+                self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.15, 1)))
             else:
                 for card in self.game.dealer.hand:
-                    self.dealer_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.2, 1)))
+                    self.dealer_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.15, 1)))
         if self.dealer_layout not in self.children:
             self.add_widget(self.dealer_layout)
 
@@ -170,9 +183,9 @@ class GameLayout(GridLayout):
         self.player_layout.clear_widgets()
         for card in self.game.player.hand:
             if before_bet:
-                self.player_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
+                self.player_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.15, 1)))
             else:
-                self.player_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.2, 1)))
+                self.player_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.15, 1)))
         if self.player_layout not in self.children:
             self.add_widget(self.player_layout)
 

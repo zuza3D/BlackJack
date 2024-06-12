@@ -8,7 +8,7 @@ class PlayerStats:
         if os.path.exists(self._stats_file):
             self._player_stats = self._load_stats()
         else:
-            self._player_stats = {"balance": 1000, "wins": 0, "losses": 0}
+            self._player_stats = {"balance": 1000, "wins": 0, "losses": 0, "tie": 0}
             self._save_stats()
 
     @property
@@ -30,7 +30,7 @@ class PlayerStats:
                 with open(self._stats_file, 'r') as file:
                     return json.load(file)
             except json.JSONDecodeError:
-                return {"balance": 1000, "wins": 0, "losses": 0}
+                return {"balance": 1000, "wins": 0, "losses": 0, "tie": 0}
 
     def _save_stats(self):
         with open(self._stats_file, 'w') as file:
@@ -45,6 +45,7 @@ class PlayerStats:
         elif result['dealer']:
             self._player_stats["losses"] += 1
         else:
+            self._player_stats["tie"] += 1
             self._player_stats["balance"] += bet
         self._save_stats()
 
@@ -52,5 +53,5 @@ class PlayerStats:
         return f"Wins: {self._player_stats['wins']} \nLosses: {self._player_stats['losses']}"
 
     def reset_statistics(self):
-        self._player_stats = {"balance": 1000, "wins": 0, "losses": 0}
+        self._player_stats = {"balance": 1000, "wins": 0, "losses": 0, "tie": 0}
         self._save_stats()
