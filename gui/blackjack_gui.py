@@ -39,17 +39,18 @@ class GameLayout(GridLayout):
 
         self.dealer_score_layout = GridLayout()
         self.dealer_score_layout.cols = 5
-        self.update_dealer_score_layout()
+        # self.update_dealer_score_layout()
 
         self.dealer_layout = StackLayout()
-        self.update_dealer_layout()
+        # self.update_dealer_layout()
 
         self.player_score_layout = GridLayout()
         self.player_score_layout.cols = 5
-        self.update_player_score_layout()
+        # self.update_player_score_layout()
 
         self.player_layout = StackLayout()
-        self.update_player_layout()
+        # self.update_player_layout()
+        self.create_empty_table()
 
         self.player_decision_bar = GridLayout(size_hint_y=0.4)
         self.player_decision_bar.cols = 7
@@ -79,6 +80,12 @@ class GameLayout(GridLayout):
         # self.xd.add_widget(CustomButton(background_color=(0, 1, 0, 1), size_hint=(0.8, 1)))
         # self.add_widget(self.xd)
 
+    def create_empty_table(self):
+        self.update_dealer_score_layout(before_bet=True)
+        self.update_dealer_layout(before_bet=True)
+        self.update_player_score_layout(before_bet=True)
+        self.update_player_layout(before_bet=True)
+
     def create_bet_bar(self):
         self.bet_bar.clear_widgets()
         self.disable_player_decision_buttons()
@@ -99,7 +106,7 @@ class GameLayout(GridLayout):
         self.bet_label.text = str(self.slider.value) + "$"
 
     def update_credits_label(self):
-        self.credits_label.text = "credits: ".upper() + str(self.player_stats.balance)
+        self.credits_label.text = "credits: ".upper() + str(self.player_stats.balance) + "$"
 
     def on_button_press(self, value):
         self.update_dealer_score_layout()
@@ -111,6 +118,8 @@ class GameLayout(GridLayout):
         self.update_credits_label()
         self.bet_bar.clear_widgets()
         self.enable_player_decision_buttons()
+        if self.game.is_game_over():
+            self.end_game()
 
     def disable_player_decision_buttons(self):
         for child in self.player_decision_bar.children:
@@ -131,16 +140,10 @@ class GameLayout(GridLayout):
         self.update_player_layout()
         self.update_player_score_layout()
         if self.game.is_game_over():
-            self.game.dealer.reveal_card()
-            self.update_dealer_layout()
-            self.update_dealer_score_layout()
             self.end_game()
 
     def stand(self, _):
         if self.game.dealer.has_blackjack():
-            self.game.dealer.reveal_card()
-            self.update_dealer_layout()
-            self.update_dealer_score_layout()
             self.end_game()
             return
         self.game.dealer_play()
@@ -148,38 +151,53 @@ class GameLayout(GridLayout):
         self.update_dealer_score_layout()
         self.end_game()
 
-    def update_dealer_layout(self):
+    def update_dealer_layout(self, before_bet=False):
         self.dealer_layout.clear_widgets()
         dealer_cards = self.game.dealer.hand
-        if self.game.dealer.hidden_card:
-            self.dealer_layout.add_widget(Image(source=dealer_cards[0].get_image_path(), size_hint=(0.2, 1)))
-            self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
-        else:
+        if before_bet:
             for card in self.game.dealer.hand:
-                self.dealer_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.2, 1)))
+                self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
+        else:
+            if self.game.dealer.hidden_card:
+                self.dealer_layout.add_widget(Image(source=dealer_cards[0].get_image_path(), size_hint=(0.2, 1)))
+                self.dealer_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
+            else:
+                for card in self.game.dealer.hand:
+                    self.dealer_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.2, 1)))
         if self.dealer_layout not in self.children:
             self.add_widget(self.dealer_layout)
 
-    def update_player_layout(self):
+    def update_player_layout(self, before_bet=False):
         self.player_layout.clear_widgets()
         for card in self.game.player.hand:
-            self.player_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.2, 1)))
+            if before_bet:
+                self.player_layout.add_widget(Image(source='images/cards/blank.png', size_hint=(0.2, 1)))
+            else:
+                self.player_layout.add_widget(Image(source=card.get_image_path(), size_hint=(0.2, 1)))
         if self.player_layout not in self.children:
             self.add_widget(self.player_layout)
 
-    def update_player_score_layout(self):
+    def update_player_score_layout(self, before_bet=False):
         self.player_score_layout.clear_widgets()
-        self.player_score_layout.add_widget(CustomLabel(text=self.game.player.__str__().upper()))
+        if before_bet:
+            self.player_score_layout.add_widget(CustomLabel(text="Player: ".upper()))
+        else:
+            self.player_score_layout.add_widget(CustomLabel(text=self.game.player.__str__().upper()))
         if self.player_score_layout not in self.children:
             self.add_widget(self.player_score_layout)
 
-    def update_dealer_score_layout(self):
+    def update_dealer_score_layout(self, before_bet=False):
         self.dealer_score_layout.clear_widgets()
-        self.dealer_score_layout.add_widget(CustomLabel(text=self.game.dealer.__str__().upper()))
+        if before_bet:
+            self.dealer_score_layout.add_widget(CustomLabel(text="Dealer: ".upper()))
+        else:
+            self.dealer_score_layout.add_widget(CustomLabel(text=self.game.dealer.__str__().upper()))
         if self.dealer_score_layout not in self.children:
             self.add_widget(self.dealer_score_layout)
 
     def end_game(self):
+        self.update_dealer_layout()
+        self.update_dealer_score_layout()
         self.game.update_result()
         winner = self.game.find_winner()
         result = self.game.show_result()
@@ -198,13 +216,10 @@ class GameLayout(GridLayout):
     def _initialize_game(self):
         self.game.start_game()
         self.update_credits_label()
-        self.update_player_layout()
-        self.update_dealer_layout()
-        self.update_player_score_layout()
-        self.update_dealer_score_layout()
+        self.create_empty_table()
         self.create_bet_bar()
-        if self.game.is_game_over():
-            self.end_game()
+        # if self.game.is_game_over():
+        #     self.end_game()
 
     def load_new_game(self):
         self._initialize_game()

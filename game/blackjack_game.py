@@ -193,7 +193,8 @@ class BlackJackGame:
             self._result['tie'] = 1
 
     def is_game_over(self):
-        if self._player.is_lost() or self._player.has_blackjack():
+        if self._player.is_lost() or self._player.has_blackjack() or self._dealer.has_blackjack():
+            self._dealer.reveal_card()
             return True
         return False
 

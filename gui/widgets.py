@@ -82,7 +82,7 @@ class CustomIntSlider(Slider):
     def __init__(self, **kwargs):
         super(CustomIntSlider, self).__init__(**kwargs)
         self.min = 1
-        self.value = int(self.max / 2)
+        self.value = (self.max / 2) if self.max > 1 else 1
         self.step = 1
         self.value = int(self.value)
         self.value_track = True
