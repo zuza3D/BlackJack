@@ -31,6 +31,10 @@ class Player:
     def score(self):
         return self._score
 
+    @score.setter
+    def score(self, value):
+        self._score = value
+
     @property
     def extra_point_ace(self):
         return self._extra_point_ace
@@ -162,6 +166,8 @@ class BlackJackGame:
 
     def find_winner(self):
         player_score, dealer_score = self.get_players_score()
+        self.player.score = player_score
+        self.dealer.score = dealer_score
 
         if player_score > 21:
             return f'Dealer wins'

@@ -4,14 +4,15 @@ from gui.widgets import TitleLabel,  CenteredButton
 
 class MainMenuLayout(BoxLayout):
     def __init__(self, screen_manager, **kwargs):
-        self.screen_manager = screen_manager
         super(MainMenuLayout, self).__init__(**kwargs)
+        self.screen_manager = screen_manager
+
         self.padding = 20
         self.spacing = 20
 
         self.orientation = 'vertical'
 
-        self.add_widget(TitleLabel())
+        self.add_widget(TitleLabel("BlackJack"))
 
         # Add "Play" button and bind to start_game
         self.play_button = CenteredButton(text="Play".upper())
@@ -20,10 +21,12 @@ class MainMenuLayout(BoxLayout):
 
         # Add "Practise" button
         self.practise_button = CenteredButton(text="Practise basic strategy".upper())
+        self.practise_button.bind(on_press=self.start_quiz)
         self.add_widget(self.practise_button)
 
         # Add "Statistic" button
         self.statistics_button = CenteredButton(text="Player statistics".upper())
+        self.statistics_button.bind(on_press=self.show_statistic)
         self.add_widget(self.statistics_button)
 
         # Add "Exit" button
@@ -32,3 +35,9 @@ class MainMenuLayout(BoxLayout):
 
     def start_game(self, _):
         self.screen_manager.current = 'game'
+
+    def show_statistic(self, _):
+        self.screen_manager.current = 'stats'
+
+    def start_quiz(self, _):
+        self.screen_manager.current = 'quiz'

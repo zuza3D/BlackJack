@@ -32,10 +32,10 @@ class CustomLabel(Label):
 
 
 class TitleLabel(Label):
-    def __init__(self, **kwargs):
+    def __init__(self, title, **kwargs):
         super(TitleLabel, self).__init__(**kwargs)
         self.font_name = "Comic"
-        self.text = "BlackJack"
+        self.text = title
         self.font_size = 50
         self.bold = True
         self.color = (240 / 255, 215 / 255, 135 / 255, 1)

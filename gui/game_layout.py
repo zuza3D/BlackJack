@@ -12,16 +12,15 @@ from gui.widgets import CustomButton, CustomPopup, CenteredButton, PopupLayout, 
 class GameLayout(GridLayout):
     def __init__(self, screen_manager, player_stats, **kwargs):
         super(GameLayout, self).__init__(**kwargs)
+        self.screen_manager = screen_manager
+        self.player_stats = player_stats
+        self.game = BlackJackGame()
+
         self.bet_label = None
         self.bet_button = None
         self.slider = None
-        self.cols = 1
-
-        self.screen_manager = screen_manager
-        self.game = BlackJackGame()
-        self.player_stats = player_stats
-
         self.popup = None
+        self.cols = 1
 
         self.navigation_bar = StackLayout(size_hint=(1, 0.4))
 
@@ -30,6 +29,7 @@ class GameLayout(GridLayout):
         self.new_game_button = CustomButton(text="new game".upper(), size_hint=(0.2, 1))
         self.new_game_button.bind(on_press=self.start_new_game)
         self.credits_label = CreditsLabel(self.player_stats.balance)
+
         self.navigation_bar.add_widget(self.back_button)
         self.navigation_bar.add_widget(self.new_game_button)
         self.navigation_bar.add_widget(Widget(size_hint=(0.2, 1)))
@@ -213,7 +213,9 @@ class GameLayout(GridLayout):
         self.game.update_result()
         winner = self.game.find_winner()
         result = self.game.show_result()
-        self.player_stats.update_stats(self.game.result, self.game.player.bet, blackjack=False)
+
+        has_blackjack = self.game.player.has_blackjack()
+        self.player_stats.update_stats(self.game.result, self.game.player.bet, has_blackjack)
         if self.player_stats.balance == 0:
             self.show_popup("game over".upper(), self.player_stats.show_statistics())
             self.player_stats.reset_statistics()
