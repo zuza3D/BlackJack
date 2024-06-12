@@ -42,7 +42,13 @@ class PlotGenerator:
         plt.savefig(self._histogram_path, transparent=True)
         plt.close()
 
+    def incorrect_data(self):
+        data = self.get_game_result(tie=True)
+        return True if data['wins'] == 0 or data['losses'] == 0 else False
+
     def generate_game_result_pie_graph(self):
+        if self.incorrect_data():
+            return
         game_result = self.get_game_result(tie=False)
         labels = game_result.keys()
         sizes = game_result.values()
