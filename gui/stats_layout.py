@@ -1,3 +1,6 @@
+import os.path
+
+from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
@@ -23,6 +26,10 @@ class StatsLayout(GridLayout):
         self.back_button.bind(on_press=self.back_to_menu)
         self.navigation_bar.add_widget(self.back_button)
 
+        self.refresh_button = CustomButton(text="refresh".upper(), size_hint=(0.2, 1))
+        self.refresh_button.bind(on_press=self.refresh_plots)
+        self.navigation_bar.add_widget(self.refresh_button)
+
         self.navigation_bar.add_widget(Widget(size_hint=(0.2, 1)))
         self.navigation_bar.add_widget(CustomLabel(text="Statistics".upper(), size_hint=(0.2, 1)))
         self.add_widget(self.navigation_bar)
@@ -31,7 +38,7 @@ class StatsLayout(GridLayout):
         self.update_plot_panel()
 
     def refresh_plots(self, _):
-        self.update_plot_panel()
+        Clock.schedule_once(lambda dt: self.update_plot_panel())
 
     def back_to_menu(self, _):
         self.screen_manager.current = 'menu'
@@ -48,11 +55,20 @@ class StatsLayout(GridLayout):
         player_stats_data = self.player_stats.stats
         self.plot_generator.data = player_stats_data
 
+        if os.path.exists(self.plot_generator.pie_chart_path):
+            os.remove(self.plot_generator.pie_chart_path)
+
+        if os.path.exists(self.plot_generator.histogram_path):
+            os.remove(self.plot_generator.histogram_path)
+
         self.plot_generator.generate_game_result_histogram()
         self.plot_generator.generate_game_result_pie_graph()
 
-        self.plot_panel.add_widget(Image(source=self.plot_generator.pie_chart_path))
-        self.plot_panel.add_widget(Image(source=self.plot_generator.histogram_path))
+        pie_chart_image = Image(source=self.plot_generator.pie_chart_path)
+        histogram_image = Image(source=self.plot_generator.histogram_path)
+
+        self.plot_panel.add_widget(pie_chart_image)
+        self.plot_panel.add_widget(histogram_image)
 
         if self.plot_panel not in self.children:
             self.add_widget(self.plot_panel)
