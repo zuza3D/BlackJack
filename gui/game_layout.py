@@ -38,19 +38,19 @@ class GameLayout(GridLayout):
 
         self.game.start_game()
 
-        self.dealer_score_layout = GridLayout()
+        self.dealer_score_layout = GridLayout(size_hint=(1, 0.3))
         self.dealer_score_layout.cols = 5
 
         self.dealer_layout = StackLayout()
 
-        self.player_score_layout = GridLayout()
+        self.player_score_layout = GridLayout(size_hint=(1, 0.3))
         self.player_score_layout.cols = 5
 
         self.player_layout = StackLayout()
 
         self.create_empty_table()
 
-        self.player_decision_bar = GridLayout(size_hint_y=0.4)
+        self.player_decision_bar = GridLayout(size_hint_y=0.3)
         self.player_decision_bar.cols = 7
         self.player_decision_bar.add_widget(Label())
         self.player_decision_bar.add_widget(Label())
@@ -69,7 +69,7 @@ class GameLayout(GridLayout):
         self.add_widget(GridLayout(size_hint_y=0.2))
         self.add_widget(self.player_decision_bar)
 
-        self.bet_bar = BoxLayout()
+        self.bet_bar = BoxLayout(size_hint=(1, 0.6))
         self.bet_bar.orientation = 'vertical'
         self.create_bet_bar()
         self.add_widget(self.bet_bar)

@@ -1,6 +1,6 @@
 from game.card import CardRank, card_values
 
-Action = {
+decisions = {
     'H': 'hit',
     'S': 'stand',
     'D': 'double',
@@ -22,7 +22,7 @@ class BasicStrategy:
                 player_cards = split_line[0]
                 actions = split_line[1:]
                 for idx in range(len(dealer_cards)):
-                    decision_table[(player_cards, dealer_cards[idx])] = Action[actions[idx]]
+                    decision_table[(player_cards, dealer_cards[idx])] = decisions[actions[idx]]
         return decision_table
 
     def are_cards_equal(self, player_hand):
@@ -34,7 +34,9 @@ class BasicStrategy:
     def get_action(self, player_hand, dealer_card):
         dealer_card = str(card_values[dealer_card.get_rank()]) if dealer_card.get_rank() != CardRank.Ace else 'A'
         if self.contains_ace(player_hand):
-            player_hand = ['A' if card.get_rank() == CardRank.Ace else str(card_values[card.get_rank()]) for card in player_hand]
+            player_hand = ['A' if card.get_rank() == CardRank.Ace else str(card_values[card.get_rank()])
+                           for card in player_hand]
+
             player_hand = sorted(player_hand)
             player_hand.reverse()
             return self.strategy_table[('-'.join(player_hand), dealer_card)]

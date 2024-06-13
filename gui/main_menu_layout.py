@@ -1,3 +1,4 @@
+from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from gui.widgets import TitleLabel,  CenteredButton
 
@@ -31,7 +32,11 @@ class MainMenuLayout(BoxLayout):
 
         # Add "Exit" button
         self.exit_button = CenteredButton(text="Exit".upper())
+        self.exit_button.bind(on_press=self.close_app)
         self.add_widget(self.exit_button)
+
+    def close_app(self, _):
+        App.get_running_app().stop()
 
     def start_game(self, _):
         self.screen_manager.current = 'game'

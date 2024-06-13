@@ -7,7 +7,6 @@ from kivy.uix.widget import Widget
 from gui.plot_generator import PlotGenerator
 from gui.widgets import CustomButton, CustomLabel
 
-# popraw to!
 
 class StatsLayout(GridLayout):
     def __init__(self, screen_manager, player_stats, **kwargs):
@@ -24,9 +23,6 @@ class StatsLayout(GridLayout):
         self.back_button.bind(on_press=self.back_to_menu)
         self.navigation_bar.add_widget(self.back_button)
 
-        # self.refresh_button = CustomButton(text="refresh".upper(), size_hint=(0.2, 1))
-        # self.refresh_button.bind(on_press=self.refresh_plots)
-        # self.navigation_bar.add_widget(self.refresh_button)
         self.navigation_bar.add_widget(Widget(size_hint=(0.2, 1)))
         self.navigation_bar.add_widget(CustomLabel(text="Statistics".upper(), size_hint=(0.2, 1)))
         self.add_widget(self.navigation_bar)
