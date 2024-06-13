@@ -23,6 +23,7 @@ class Player:
     @bet.setter
     def bet(self, value):
         self._bet = value
+
     @property
     def hand(self):
         return self._hand

@@ -7,7 +7,7 @@ from kivy.uix.widget import Widget
 
 from game.basic_strategy import BasicStrategy
 from game.card import Card, CardSuit, CardRank
-from gui.widgets import CustomButton, CustomLabel, CustomPopup, PopupLayout, QuizPopup
+from gui.widgets import CustomButton, CustomLabel, CustomPopup, QuizPopup
 
 
 class QuizLayout(GridLayout):
