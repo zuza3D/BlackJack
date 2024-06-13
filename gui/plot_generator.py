@@ -44,11 +44,17 @@ class PlotGenerator:
 
     def incorrect_data(self):
         data = self.get_game_result(tie=True)
-        return True if data['wins'] == 0 or data['losses'] == 0 else False
+        return True if data['wins'] == 0 and data['losses'] == 0 else False
 
     def generate_game_result_pie_graph(self):
         if self.incorrect_data():
+            fig, ax = plt.subplots()
+            ax.pie([1], colors=[(38 / 255, 3 / 255, 21 / 255, 1)])
+            ax.set_aspect('equal')
+            plt.savefig(self._pie_chart_path, transparent=True)
+            plt.close()
             return
+
         game_result = self.get_game_result(tie=False)
         labels = game_result.keys()
         sizes = game_result.values()
