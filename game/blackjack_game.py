@@ -165,28 +165,13 @@ class BlackJackGame:
         return player_score, dealer_score
 
     def find_winner(self):
-        player_score, dealer_score = self.get_players_score()
-        self.player.score = player_score
-        self.dealer.score = dealer_score
-
-        if player_score > 21:
-            return f'Dealer wins'
-        if dealer_score > 21:
+        if self._result['player']:
             return f'Player wins'
-        if player_score > dealer_score:
-            return f'Player wins'
-        if dealer_score > player_score:
+        if self._result['dealer']:
             return f'Dealer wins'
-        return "It's a tie!"
-
-    # def find_winner(self):
-    #     if self._result['player']:
-    #         return f'Player wins'
-    #     if self._result['dealer']:
-    #         return f'Dealer wins'
-    #     if self._result['tie']:
-    #         return "It's a tie!"
-    #     return "xd"
+        if self._result['tie']:
+            return "It's a tie!"
+        return "xd"
 
     def update_result(self):
         player_score, dealer_score = self.get_players_score()
